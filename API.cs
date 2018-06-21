@@ -13,15 +13,12 @@ namespace TopMostPin
 {
     public class API
     {
-        /******** For GetWindowTitle() *********************/
         [DllImport("user32.dll")]
         static extern IntPtr GetForegroundWindow();
 
         [DllImport("user32.dll")]
         static extern int GetWindowText(IntPtr hWnd, StringBuilder text, int count);
-        /*********** END ***********************************/
 
-        /********* Setting Windows on Top ******************/
 
         [DllImport("user32.dll", EntryPoint = "SetWindowPos")]
         static extern IntPtr SetWindowPos(IntPtr hWnd, int hWndInsertAfter, int x, int Y, int cx, int cy, int wFlags);
@@ -47,7 +44,6 @@ namespace TopMostPin
         const int SWP_NOACTIVATE = 0x0010;
         const int HWND_TOPMOST = -1;
         const int HWND_NOTOPMOST = -2;
-        /*********** END ***********************************/
 
         delegate bool EnumWindowsProc(int hwnd, int lParam);
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
@@ -79,6 +75,8 @@ namespace TopMostPin
         static extern int GetWindowModuleFileName(IntPtr hWnd, StringBuilder filename, int count);
 
 
+        [DllImport("user32.dll")]
+        static extern bool IsIconic(IntPtr hWnd);
 
         [DllImport("user32.dll", EntryPoint = "GetClassLong")]
         public static extern uint GetClassLongPtr32(IntPtr hWnd, int nIndex);
@@ -108,10 +106,11 @@ namespace TopMostPin
 
         static IntPtr GetIconHandle(IntPtr hwnd)
         {
-            IntPtr iconHandle = SendMessage(hwnd, WM_GETICON, ICON_SMALL2, 0);
-            if (iconHandle == IntPtr.Zero)
-                iconHandle = SendMessage(hwnd, WM_GETICON, ICON_SMALL, 0);
-            if (iconHandle == IntPtr.Zero)
+            IntPtr iconHandle = IntPtr.Zero;
+            // iconHandle = SendMessage(hwnd, WM_GETICON, ICON_SMALL2, 0);
+            //if (iconHandle == IntPtr.Zero)
+            //    iconHandle = SendMessage(hwnd, WM_GETICON, ICON_SMALL, 0);
+            //if (iconHandle == IntPtr.Zero)
                 iconHandle = SendMessage(hwnd, WM_GETICON, ICON_BIG, 0);
             if (iconHandle == IntPtr.Zero)
                 iconHandle = GetClassLongPtr(hwnd, GCL_HICON);
@@ -162,9 +161,16 @@ namespace TopMostPin
         {
             if(hWnd != IntPtr.Zero && IsWindowVisible(hWnd))
             {
-                ShowWindow(hWnd, SW_RESTORE);
-                SetForegroundWindow(hWnd);
-                SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+                if (IsIconic(hWnd))
+                {
+                    ShowWindow(hWnd, SW_RESTORE);
+                }
+                //else
+                //{
+                //    ShowWindow(hWnd, SW_SHOW);
+                //}
+                //SetForegroundWindow(hWnd);
+                SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW );
             }
         }
 
@@ -172,7 +178,7 @@ namespace TopMostPin
         {
             if (hWnd != IntPtr.Zero && IsWindowVisible(hWnd))
             {
-                SetWindowPos(hWnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+                SetWindowPos(hWnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
             }
         }
     }

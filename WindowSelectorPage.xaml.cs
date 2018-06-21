@@ -21,23 +21,27 @@ namespace TopMostPin
     /// </summary>
     public partial class WindowSelectorPage : Page
     {
-        public ObservableCollection<PinnedWindowListItem> PinnedWindowList { get => ((App)App.Current).pinnedWindowList; }
+        public ObservableCollection<PinnedWindowListItem> PinWindows { get; } = new ObservableCollection<PinnedWindowListItem>();
 
-        private Command togglePinnedCommand = new Command
+        public ICommand TogglePinnedCommand { get; } = new Command
         {
             CommandAction = (e) => { MessageBox.Show(e.ToString()); }
         };
-        public ICommand TogglePinnedCommand
-        {
-            get => togglePinnedCommand;
-        }
 
         public WindowSelectorPage()
         {
             InitializeComponent();
             this.DataContext = this;
-            //RefreshList();
-            ((App)App.Current).notifyIcon.TrayPopupOpen += NotifyIcon_TrayPopupOpen;
+            ((App)Application.Current).notifyIcon.TrayPopupOpen += NotifyIcon_TrayPopupOpen;
+            this.IsVisibleChanged += WindowSelectorPage_IsVisibleChanged;
+        }
+
+        private void WindowSelectorPage_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if ((bool)e.NewValue == false)
+            {
+                ((App)Application.Current).pinnedWindowList = PinWindows.Where(x => x.Pinned == true).ToList();
+            }
         }
 
         private void NotifyIcon_TrayPopupOpen(object sender, RoutedEventArgs e)
@@ -48,41 +52,28 @@ namespace TopMostPin
         public void RefreshList()
         {
             var windows = API.EnumerateWindows();
-            int lenPinned = PinnedWindowList.Count;
-            bool[] pinnedWindowStillOpend = new bool[lenPinned];
-            for (int i = 0; i < lenPinned; i++)
+
+            var pinnedWindowList = ((App)Application.Current).pinnedWindowList;
+
+            foreach (var p in pinnedWindowList)
             {
-                pinnedWindowStillOpend[i] = false;
-            }
-            foreach (var w in windows)
-            {
-                bool exists = false;
-                for (int j = 0; j < lenPinned; j++)
+                for (int i = 0; i < windows.Count; i++)
                 {
-                    if(pinnedWindowStillOpend[j]) { continue; }
-                    var p = PinnedWindowList[j];
+                    var w = windows[i];
+                    if (w.Pinned) { continue; }
                     if (w.Handle == p.Handle)
                     {
-                        pinnedWindowStillOpend[j] = true;
-                        exists = true;
-                        if (p.Title != w.Title)
-                        {
-                            p.Title = w.Title;
-                        }
+                        w.Pinned = true;
                     }
                 }
-                if (!exists)
-                {
-                    PinnedWindowList.Add(w);
-                }
             }
-            for (int i = pinnedWindowStillOpend.Length; i > 0; i--)
+
+            PinWindows.Clear();
+            foreach (var w in windows)
             {
-                if (!pinnedWindowStillOpend[i - 1])
-                {
-                    PinnedWindowList.RemoveAt(i - 1);
-                }
+                PinWindows.Add(w);
             }
+
         }
 
 
@@ -91,7 +82,7 @@ namespace TopMostPin
         {
             var item = ((ListViewItem)sender).Content as PinnedWindowListItem;
             item.Pinned = !item.Pinned;
-            if(item.Pinned)
+            if (item.Pinned)
             {
                 API.PinWindow(item.Handle);
             }
@@ -99,7 +90,7 @@ namespace TopMostPin
             {
                 API.UnPinWindow(item.Handle);
             }
-            
+
         }
     }
 }

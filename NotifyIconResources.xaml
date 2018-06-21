@@ -4,23 +4,22 @@
                     xmlns:tb="http://www.hardcodet.net/taskbar">
 
     <ContextMenu x:Shared="false" x:Key="SysTrayMenu">
-        <MenuItem Header="Unpin All"></MenuItem>
-        <MenuItem Header="Open Settings" Command="{Binding ShowSettingsWindowCommand}"></MenuItem>
+        <MenuItem Header="Unpin All" Command="{Binding UnpinAllCommand}"></MenuItem>
+        <MenuItem Header="Settings" Command="{Binding ShowSettingsWindowCommand}"></MenuItem>
         <Separator />
-        <MenuItem Header="About"></MenuItem>
         <MenuItem Header="Exit" Command="{Binding ExitApplicationCommand}"></MenuItem>
     </ContextMenu>
     <tb:TaskbarIcon x:Key="NotifyIcon" 
                     IconSource="Resources/Paomedia-Small-N-Flat-Pin.ico" 
                     ToolTipText="Top Most Pin" 
                     ContextMenu="{StaticResource SysTrayMenu}">
-        
+
         <tb:TaskbarIcon.DataContext>
             <local:NotifyIconViewModel/>
         </tb:TaskbarIcon.DataContext>
 
         <tb:TaskbarIcon.TrayPopup>
-            <Frame Width="300" Height="450" Source="WindowSelectorPage.xaml"></Frame>
+            <Frame Width="300" Height="450" Source="WindowSelectorPage.xaml" ></Frame>
         </tb:TaskbarIcon.TrayPopup>
     </tb:TaskbarIcon>
 

@@ -18,41 +18,27 @@
         </Grid.RowDefinitions>
 
         <TextBlock Foreground="Gray" TextAlignment="Center" VerticalAlignment="Center">Windows</TextBlock>
-        <ListView Name="WindowList" Grid.Row="1" ItemsSource="{Binding PinnedWindowList}">
+        <ListView Grid.Row="1" ItemsSource="{Binding PinWindows}">
             <ListView.Resources>
                 <Style TargetType="ListViewItem">
                     <EventSetter Event="MouseUp"  Handler="ListViewItem_MouseUp"/>
-                    <Setter Property="MinHeight" Value="25" />
                 </Style>
-                
                 <BooleanToVisibilityConverter x:Key="BoolToVis" />
             </ListView.Resources>
-            <ListView.View>
-                <GridView>
-                    <GridViewColumn  Width="30">
-                        <GridViewColumn.CellTemplate>
-                            <DataTemplate>
-                                <Image Source="pack://application:,,,/Resources/Paomedia-Small-N-Flat-Pin.ico" Visibility="{Binding Pinned, Converter={StaticResource BoolToVis}}"/>
-                            </DataTemplate>
-                        </GridViewColumn.CellTemplate>
-                    </GridViewColumn>
-                    <GridViewColumn  Width="30">
-                        <GridViewColumn.CellTemplate>
-                            <DataTemplate>
-                                <Image Source="{Binding Icon}" />
-                            </DataTemplate>
-                        </GridViewColumn.CellTemplate>
-                    </GridViewColumn>
-                    <GridViewColumn Header="Title" Width="230">
-                        <GridViewColumn.CellTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding Title}" TextWrapping="Wrap"></TextBlock>
-                            </DataTemplate>
-                        </GridViewColumn.CellTemplate>
-                    </GridViewColumn>
-                </GridView>
-            </ListView.View>
-            
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <Grid MinHeight="25">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="20" />
+                            <ColumnDefinition Width="28"/>
+                            <ColumnDefinition Width="230"/>
+                        </Grid.ColumnDefinitions>
+                        <Image Grid.Column="0" Source="pack://application:,,,/Resources/Paomedia-Small-N-Flat-Pin.ico" Visibility="{Binding Pinned, Converter={StaticResource BoolToVis}}"/>
+                        <Image Margin="5,0,5,0" Grid.Column="1" Source="{Binding Icon}" />
+                        <TextBlock Margin="5,0,0,0" Grid.Column="2" Text="{Binding Title}" TextWrapping="Wrap" VerticalAlignment="Center"></TextBlock>
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
         </ListView>
     </Grid>
 </Page>

@@ -19,7 +19,7 @@ namespace TopMostPin
     {
 
         public TaskbarIcon notifyIcon;
-        public ObservableCollection<PinnedWindowListItem> pinnedWindowList = new ObservableCollection<PinnedWindowListItem>();
+        public List<PinnedWindowListItem> pinnedWindowList = new List<PinnedWindowListItem>();
 
         protected override void OnStartup(StartupEventArgs e)
         {

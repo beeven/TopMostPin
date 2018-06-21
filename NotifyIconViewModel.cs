@@ -9,34 +9,37 @@ using System.Windows.Input;
 
 namespace TopMostPin
 {
-    public class NotifyIconViewModel: INotifyPropertyChanged
+    public class NotifyIconViewModel : INotifyPropertyChanged
     {
-        public ICommand ShowSettingsWindowCommand
+        public ICommand UnpinAllCommand { get; } = new Command
         {
-            get
+            CanExecuteFunc = (e) => ((App)App.Current).pinnedWindowList.Count > 0,
+            CommandAction = (e) =>
             {
-                return new Command
+                var pinnedWindowList = ((App)App.Current).pinnedWindowList;
+                foreach (var item in pinnedWindowList)
                 {
-                    CanExecuteFunc = (e) => Application.Current.MainWindow == null,
-                    CommandAction = (e) =>
-                    {
-                        Application.Current.MainWindow = new MainWindow();
-                        Application.Current.MainWindow.Show();
-                    }
-                };
+                    API.UnPinWindow(item.Handle);
+                }
+                pinnedWindowList.Clear();
             }
-        }
+        };
 
-        public ICommand ExitApplicationCommand
+        public ICommand ShowSettingsWindowCommand { get; } = new Command
         {
-            get
+            CanExecuteFunc = (e) => Application.Current.MainWindow == null,
+            CommandAction = (e) =>
             {
-                return new Command
-                {
-                    CommandAction = (e) => Application.Current.Shutdown()
-                };
+                Application.Current.MainWindow = new MainWindow();
+                Application.Current.MainWindow.Show();
             }
-        }
+        };
+
+
+        public ICommand ExitApplicationCommand { get; } = new Command
+        {
+            CommandAction = (e) => Application.Current.Shutdown()
+        };
 
         public event PropertyChangedEventHandler PropertyChanged;
 
