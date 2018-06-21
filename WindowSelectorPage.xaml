@@ -7,7 +7,9 @@
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="300"
       Title="WindowSelectorPage"
-      Background="White">
+      Background="White"
+      HorizontalAlignment="Stretch"
+      VerticalAlignment="Stretch">
 
     <Grid>
         <Grid.RowDefinitions>
@@ -16,17 +18,41 @@
         </Grid.RowDefinitions>
 
         <TextBlock Foreground="Gray" TextAlignment="Center" VerticalAlignment="Center">Windows</TextBlock>
-        <ListView Name="WindowList" Grid.Row="1" ItemsSource="{Binding PinnedWindowsList}">
-            <ListView.ItemTemplate>
-                <DataTemplate>
-                    <Button Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListView}, Path=DataContext.TogglePinnedCommand}" CommandTarget="{Binding ElementName=WindowList}" CommandParameter="{Binding Handle}">
-                    <WrapPanel>
-                        <TextBlock Text="{Binding Pinned}" />
-                        <TextBlock Text="{Binding Title}" />
-                    </WrapPanel>
-                    </Button>
-                </DataTemplate>
-            </ListView.ItemTemplate>
+        <ListView Name="WindowList" Grid.Row="1" ItemsSource="{Binding PinnedWindowList}">
+            <ListView.Resources>
+                <Style TargetType="ListViewItem">
+                    <EventSetter Event="MouseUp"  Handler="ListViewItem_MouseUp"/>
+                    <Setter Property="MinHeight" Value="25" />
+                </Style>
+                
+                <BooleanToVisibilityConverter x:Key="BoolToVis" />
+            </ListView.Resources>
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn  Width="30">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Image Source="pack://application:,,,/Resources/Paomedia-Small-N-Flat-Pin.ico" Visibility="{Binding Pinned, Converter={StaticResource BoolToVis}}"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn  Width="30">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Image Source="{Binding Icon}" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Title" Width="230">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Title}" TextWrapping="Wrap"></TextBlock>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                </GridView>
+            </ListView.View>
+            
         </ListView>
     </Grid>
 </Page>

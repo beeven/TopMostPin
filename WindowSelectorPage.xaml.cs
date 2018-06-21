@@ -21,7 +21,7 @@ namespace TopMostPin
     /// </summary>
     public partial class WindowSelectorPage : Page
     {
-        public ObservableCollection<PinnedWindowListItem> PinnedWindowsList { get => ((App)App.Current).pinnedWindowList; }
+        public ObservableCollection<PinnedWindowListItem> PinnedWindowList { get => ((App)App.Current).pinnedWindowList; }
 
         private Command togglePinnedCommand = new Command
         {
@@ -48,7 +48,7 @@ namespace TopMostPin
         public void RefreshList()
         {
             var windows = API.EnumerateWindows();
-            int lenPinned = PinnedWindowsList.Count;
+            int lenPinned = PinnedWindowList.Count;
             bool[] pinnedWindowStillOpend = new bool[lenPinned];
             for (int i = 0; i < lenPinned; i++)
             {
@@ -59,34 +59,47 @@ namespace TopMostPin
                 bool exists = false;
                 for (int j = 0; j < lenPinned; j++)
                 {
-                    var p = PinnedWindowsList[j];
-                    if (w.Key == p.Handle)
+                    if(pinnedWindowStillOpend[j]) { continue; }
+                    var p = PinnedWindowList[j];
+                    if (w.Handle == p.Handle)
                     {
                         pinnedWindowStillOpend[j] = true;
                         exists = true;
-                        if (p.Title != w.Value)
+                        if (p.Title != w.Title)
                         {
-                            p.Title = w.Value;
+                            p.Title = w.Title;
                         }
                     }
                 }
                 if (!exists)
                 {
-                    PinnedWindowsList.Add(new PinnedWindowListItem { Pinned = false, Handle = w.Key, Title = w.Value });
+                    PinnedWindowList.Add(w);
                 }
             }
             for (int i = pinnedWindowStillOpend.Length; i > 0; i--)
             {
                 if (!pinnedWindowStillOpend[i - 1])
                 {
-                    PinnedWindowsList.RemoveAt(i - 1);
+                    PinnedWindowList.RemoveAt(i - 1);
                 }
             }
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
 
+
+        private void ListViewItem_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            var item = ((ListViewItem)sender).Content as PinnedWindowListItem;
+            item.Pinned = !item.Pinned;
+            if(item.Pinned)
+            {
+                API.PinWindow(item.Handle);
+            }
+            else
+            {
+                API.UnPinWindow(item.Handle);
+            }
+            
         }
     }
 }

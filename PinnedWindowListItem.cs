@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel;
 using System.Collections.ObjectModel;
+using System.Drawing;
+using System.Windows.Media;
 
 namespace TopMostPin
 {
@@ -49,6 +51,8 @@ namespace TopMostPin
             }
         }
 
+        
+
         public string Title
         {
             get => _title;
@@ -62,5 +66,8 @@ namespace TopMostPin
                 
             }
         }
+
+        public ImageSource Icon { get; set; }
+        public string FileName { get; set; }
     }
 }

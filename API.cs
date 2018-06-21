@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Media.Imaging;
 
 namespace TopMostPin
 {
@@ -26,18 +29,18 @@ namespace TopMostPin
         [DllImport("user32.dll")]
         static extern bool SetWindowText(IntPtr hWnd, string text);
 
-        const UInt32 SW_HIDE = 0;
-        const UInt32 SW_SHOWNORMAL = 1;
-        const UInt32 SW_NORMAL = 1;
-        const UInt32 SW_SHOWMINIMIZED = 2;
-        const UInt32 SW_SHOWMAXIMIZED = 3;
-        const UInt32 SW_MAXIMIZE = 3;
-        const UInt32 SW_SHOWNOACTIVATE = 4;
-        const UInt32 SW_SHOW = 5;
-        const UInt32 SW_MINIMIZE = 6;
-        const UInt32 SW_SHOWMINNOACTIVE = 7;
-        const UInt32 SW_SHOWNA = 8;
-        const UInt32 SW_RESTORE = 9;
+        const int SW_HIDE = 0;
+        const int SW_SHOWNORMAL = 1;
+        const int SW_NORMAL = 1;
+        const int SW_SHOWMINIMIZED = 2;
+        const int SW_SHOWMAXIMIZED = 3;
+        const int SW_MAXIMIZE = 3;
+        const int SW_SHOWNOACTIVATE = 4;
+        const int SW_SHOW = 5;
+        const int SW_MINIMIZE = 6;
+        const int SW_SHOWMINNOACTIVE = 7;
+        const int SW_SHOWNA = 8;
+        const int SW_RESTORE = 9;
         const int SWP_NOMOVE = 0x0002;
         const int SWP_NOSIZE = 0x0001;
         const int SWP_SHOWWINDOW = 0x0040;
@@ -62,18 +65,93 @@ namespace TopMostPin
         static extern bool IsWindowVisible(IntPtr hWnd);
 
         [DllImport("kernel32.dll", SetLastError = true)]
-        static extern bool CloseHandle(IntPtr hHandle);
+        static extern bool CloseHandle(IntPtr hWnd);
 
-        public static List<KeyValuePair<IntPtr,string>> EnumerateWindows()
+        [DllImport("user32.dll")]
+        static extern bool SetForegroundWindow(IntPtr hWnd);
+
+        
+
+        [DllImport("user32.dll")]
+        static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+        [DllImport("user32.dll")]
+        static extern int GetWindowModuleFileName(IntPtr hWnd, StringBuilder filename, int count);
+
+
+
+        [DllImport("user32.dll", EntryPoint = "GetClassLong")]
+        public static extern uint GetClassLongPtr32(IntPtr hWnd, int nIndex);
+
+        [DllImport("user32.dll", EntryPoint = "GetClassLongPtr")]
+        public static extern IntPtr GetClassLongPtr64(IntPtr hWnd, int nIndex);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = false)]
+        static extern IntPtr SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
+
+        const int GCL_HICONSM = -34;
+        const int GCL_HICON = -14;
+
+        const int ICON_SMALL = 0;
+        const int ICON_BIG = 1;
+        const int ICON_SMALL2 = 2;
+
+        const int WM_GETICON = 0x7F;
+
+        static IntPtr GetClassLongPtr(IntPtr hWnd, int nIndex)
         {
-            var collection = new List<KeyValuePair<IntPtr, string>>();
+            if (IntPtr.Size > 4)
+                return GetClassLongPtr64(hWnd, nIndex);
+            else
+                return new IntPtr(GetClassLongPtr32(hWnd, nIndex));
+        }
+
+        static IntPtr GetIconHandle(IntPtr hwnd)
+        {
+            IntPtr iconHandle = SendMessage(hwnd, WM_GETICON, ICON_SMALL2, 0);
+            if (iconHandle == IntPtr.Zero)
+                iconHandle = SendMessage(hwnd, WM_GETICON, ICON_SMALL, 0);
+            if (iconHandle == IntPtr.Zero)
+                iconHandle = SendMessage(hwnd, WM_GETICON, ICON_BIG, 0);
+            if (iconHandle == IntPtr.Zero)
+                iconHandle = GetClassLongPtr(hwnd, GCL_HICON);
+            if (iconHandle == IntPtr.Zero)
+                iconHandle = GetClassLongPtr(hwnd, GCL_HICONSM);
+
+            return iconHandle;
+        }
+
+
+
+        public static List<PinnedWindowListItem> EnumerateWindows()
+        {
+            var collection = new List<PinnedWindowListItem>();
             EnumDesktopWindows(IntPtr.Zero, (hWnd, lparam) => {
                 StringBuilder sb = new StringBuilder(255);
                 GetWindowText(hWnd, sb, sb.Capacity + 1);
                 string title = sb.ToString();
+
                 if(IsWindowVisible(hWnd) && !string.IsNullOrEmpty(title))
                 {
-                    collection.Add(new KeyValuePair<IntPtr, string>(hWnd, title));
+                    var item = new PinnedWindowListItem
+                    {
+                        Pinned = false,
+                        Title = title,
+                        Handle = hWnd
+                    };
+
+                    var hIcon = GetIconHandle(hWnd);
+                    if(hIcon != IntPtr.Zero)
+                    {
+                        var iconImgSrc = System.Windows.Interop.Imaging.CreateBitmapSourceFromHIcon(hIcon, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+                        item.Icon = iconImgSrc;
+                    }
+
+                    StringBuilder sbFilename = new StringBuilder(1024);
+                    GetWindowModuleFileName(hWnd, sbFilename, sbFilename.Capacity + 1);
+                    item.FileName = sbFilename.ToString();
+                    
+                    collection.Add(item);
                 }
                 return true;
             }, IntPtr.Zero);
@@ -82,12 +160,21 @@ namespace TopMostPin
 
         public static void PinWindow(IntPtr hWnd)
         {
-
+            if(hWnd != IntPtr.Zero && IsWindowVisible(hWnd))
+            {
+                ShowWindow(hWnd, SW_RESTORE);
+                SetForegroundWindow(hWnd);
+                SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+            }
         }
 
         public static void UnPinWindow(IntPtr hWnd)
         {
-
+            if (hWnd != IntPtr.Zero && IsWindowVisible(hWnd))
+            {
+                SetWindowPos(hWnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+            }
         }
     }
+
 }
