@@ -24,5 +24,10 @@ namespace TopMostPin
         {
             InitializeComponent();
         }
+
+        private void Donate_Button_Click(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Process.Start(@"https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=V6TZNLMDT6CYL&lc=US&item_name=Beeven&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_LG%2egif%3aNonHosted");
+        }
     }
 }

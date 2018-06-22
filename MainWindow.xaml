@@ -7,10 +7,33 @@
         mc:Ignorable="d"
         Title="TopMostPin - Settings" 
         ResizeMode="CanMinimize" 
-        Height="300" 
-        Width="500" 
+        Height="200" 
+        Width="400" 
         Icon="Resources/Paomedia-Small-N-Flat-Pin.ico">
-    <Grid>
-        <Grid.ColumnDefinitions></Grid.ColumnDefinitions>
+    <Grid Margin="10,10,10,10">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="25"/>
+            <RowDefinition Height="25" />
+            <RowDefinition Height="30" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="20" />
+        </Grid.RowDefinitions>
+        <CheckBox>Run at startup</CheckBox>
+        <CheckBox Grid.Row="1">Check for update at launch</CheckBox>
+        <CheckBox Grid.Column="1" Grid.Row="1">Enable Hotkey</CheckBox>
+        <CheckBox Grid.Column="1">Enable Pin button on title bar</CheckBox>
+        <Button Grid.Column="0" Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center">Check for update</Button>
+        <Button Width="80" Background="Transparent" BorderBrush="Transparent" Grid.Column="1" Grid.Row="3" HorizontalAlignment="Center" VerticalAlignment="Center" Click="Donate_Button_Click">
+            <Image Source="pack://application:,,,/Resources/btn_donate_LG.gif"/>
+        </Button>
+        <TextBlock Grid.Row="3">Author: Beeven Yip</TextBlock>
+        <TextBlock Grid.Row="4" Grid.ColumnSpan="2">
+            <Hyperlink>https://github.com/beeven/TopMostPin</Hyperlink>
+        </TextBlock>
     </Grid>
+
 </Window>

@@ -121,5 +121,8 @@
   <ItemGroup>
     <Resource Include="Resources\Paomedia-Small-N-Flat-Pin.ico" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\btn_donate_LG.gif" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
